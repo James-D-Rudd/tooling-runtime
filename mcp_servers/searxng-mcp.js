@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 const server = new Server(
   {
@@ -14,7 +15,7 @@ const server = new Server(
   }
 );
 
-server.setRequestHandler("tools/list", async () => {
+server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
@@ -32,10 +33,14 @@ server.setRequestHandler("tools/list", async () => {
   };
 });
 
-server.setRequestHandler("tools/call", async (req) => {
-  if (req.params.name !== "web_search") throw new Error("Unknown tool");
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  
+  if (name !== "web_search") {
+    throw new Error(`Unknown tool: ${name}`);
+  }
 
-  const query = req.params.arguments.query;
+  const query = args.query;
 
   const res = await fetch(
     `http://localhost:8088/search?q=${encodeURIComponent(query)}&format=json`
