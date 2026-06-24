@@ -104,7 +104,11 @@ function openBrowser(url) {
             ? `open "${url}"`
             : `xdg-open "${url}"`;
 
-    exec(command);
+    exec(command, (error) => {
+        if (error) {
+            console.error("Failed to open browser:", error.message);
+        }
+    });
 }
 
 promptSearch();
