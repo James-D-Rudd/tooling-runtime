@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import * as z from 'zod/v4';
 
 const BASE_URL = "http://localhost:8088";
+const MAX_CONTENT_LENGTH = 50000;
 
 function cleanText(value) {
   if (!value || typeof value !== "string") return "";
@@ -91,6 +92,78 @@ server.registerTool(
   }
 );
 
+server.registerTool(
+  "fetch_page",
+  {
+    description: "Fetch a web page and return its content as JSON",
+    inputSchema: z.object({ url: z.string() })
+  },
+  async ({ url }) => {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; searxng-mcp/1.0)'
+        }
+      });
+
+      if (!response.ok) {
+        return {
+          content: [{ 
+            type: 'text', 
+            text: JSON.stringify({ 
+              error: `HTTP ${response.status}: ${response.statusText}` 
+            })
+          }]
+        };
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      const contentLength = response.headers.get('content-length');
+      
+      // Check content length if available
+      if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) {
+        return {
+          content: [{ 
+            type: 'text', 
+            text: JSON.stringify({ 
+              error: "Content exceeds 5 MB limit" 
+            })
+          }]
+        };
+      }
+
+      const text = await response.text();
+      
+      // Truncate to max content length
+      const truncatedContent = text.length > MAX_CONTENT_LENGTH 
+        ? text.slice(0, MAX_CONTENT_LENGTH) 
+        : text;
+
+      return {
+        content: [{ 
+          type: 'text', 
+          text: JSON.stringify({
+            url,
+            status: response.status,
+            contentType,
+            contentLength: text.length,
+            content: truncatedContent
+          })
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{ 
+          type: 'text', 
+          text: JSON.stringify({ 
+            error: error instanceof Error ? error.message : "Unknown error fetching page" 
+          })
+        }]
+      };
+    }
+  }
+);
+
 
 async function main() {
     const transport = new StdioServerTransport();
@@ -98,4 +171,3 @@ async function main() {
 }
 
 main();
-
