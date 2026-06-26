@@ -117,37 +117,13 @@ server.registerTool(
         };
       }
 
-      const contentType = response.headers.get('content-type') || '';
-      const contentLength = response.headers.get('content-length');
-      
-      // Check content length if available
-      if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) {
-        return {
-          content: [{ 
-            type: 'text', 
-            text: JSON.stringify({ 
-              error: "Content exceeds 5 MB limit" 
-            })
-          }]
-        };
-      }
-
-      const text = await response.text();
-      
-      // Truncate to max content length
-      const truncatedContent = text.length > MAX_CONTENT_LENGTH 
-        ? text.slice(0, MAX_CONTENT_LENGTH) 
-        : text;
+      const page_text = await response.text();
 
       return {
         content: [{ 
           type: 'text', 
           text: JSON.stringify({
-            url,
-            status: response.status,
-            contentType,
-            contentLength: text.length,
-            content: truncatedContent
+            page_text
           })
         }]
       };
