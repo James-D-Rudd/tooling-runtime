@@ -1,2 +1,5 @@
 .aider*
-mcp_servers/searxng/node_modules/
+node_modules/
+.venv/
+__pycache__/
+
