@@ -9,6 +9,15 @@ Output JSON (stdout): {"output": "captured text", "exit_code": 0}
 
 
 import pexpect
+import re
+
+
+ANSI_ESCAPE_PATTERN = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+
+def sanitize_output(text: str) -> str:
+    """Remove ANSI escape codes from terminal output."""
+    return ANSI_ESCAPE_PATTERN.sub('', text)
 
 
 class AiderTTYWrapper:
@@ -27,8 +36,7 @@ class AiderTTYWrapper:
         self.aider_proc.expect(self.terminating_sequence)
         output = self.aider_proc.before + self.aider_proc.after
 
-        return output
+        return sanitize_output(output)
 
     def send_command(self, cmd):
         self.aider_proc.sendline(cmd)
-
