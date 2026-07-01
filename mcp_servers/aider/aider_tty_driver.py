@@ -2,14 +2,14 @@ from aider_tty_wrapper import AiderTTYWrapper
 
 def run_aider_as_tty():
     wrapper = AiderTTYWrapper()
+    wrapper.start()
 
     while True:
-        output = AiderTTYWrapper.read_output(aider_proc, terminating_sequence)
+        output = wrapper.read_output()
         print(output)
 
         command = input(">>> ")
-        AiderTTYWrapper.send_command(aider_proc, command)
-
+        wrapper.send_command(command)
 
 
 def main():
@@ -18,4 +18,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

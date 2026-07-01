@@ -12,25 +12,23 @@ import pexpect
 
 
 class AiderTTYWrapper:
-    def __init__(self, args = []):
-        self.cmd = args.insert(0, "aider")
-        self.aider_proc = pexpect.spawn(self.cmd, encoding="utf-8")
-        self.aider_proc.setwinsize(40, 120)  
-        self.aider_proc.timeout = 0
-        self.terminating_sequence = [r"\u2500+", r"(Y)es/(N)o"]
+    def __init__(self, args=["--model", "ollama/qwen2.5-coder:14b"]):
+        self.cmd = "aider"
+        self.aider_proc = pexpect.spawn(self.cmd, args=args, encoding="utf-8")
+        self.terminating_sequence = r"\u2500+"
+        self.in_accept_block = False
 
+    def start(self):
+        self.aider_proc.setwinsize(40, 120)
         self.read_output()
+        self.terminating_sequence = [r"\u2500+.*>", r"\(Y\)es/\(N\)o"]
 
     def read_output(self):
-        idx = self.aider_proc.expect(self.terminating_sequence)
-        if idx == 0:
-            output = self.aider_proc.before
-        elif idx == 1:
-            output = self.aider_proc.before + self.aider_proc.match + self.aider_proc.after
-
+        self.aider_proc.expect(self.terminating_sequence)
+        output = self.aider_proc.before + self.aider_proc.after
 
         return output
 
     def send_command(self, cmd):
-        aider_proc.sendline(cmd)
+        self.aider_proc.sendline(cmd)
 
