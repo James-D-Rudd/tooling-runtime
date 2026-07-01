@@ -1,0 +1,18 @@
+[project]
+name = "aider-mcp-server"
+version = "0.1.0"
+description = "MCP server for controlling Aider from Claude Code"
+requires-python = ">=3.14"
+dependencies = [
+    "mcp[cli]>=1.28.1",
+]
+
+[project.scripts]
+aider-mcp = "aider_mcp_server:main"
+aider-tty-wrapper = "aider_tty_wrapper:main"
+
+[tool.setuptools]
+py-modules = ["aider_mcp_server", "aider_tty_wrapper"]
+
+[tool.uv]
+package = true
