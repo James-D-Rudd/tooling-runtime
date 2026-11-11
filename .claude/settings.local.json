@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__searxng__web_search",
+      "mcp__searxng__fetch_page"
+    ]
+  }
+}
